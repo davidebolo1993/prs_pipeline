@@ -87,10 +87,10 @@ Options:
 		GWAS summary stats or pre-calculated tsv (with header) containing beta scores [required]
 
 	--summarycols=SUMMARYCOLS
-		.json file defining columns to use, as in test/sample.json
+		.json file defining columns to use
 
 	-p PHENOTYPE, --phenotype=PHENOTYPE
-		.tsv file with phenotype (and also covariates, if any) as in test/pheno.tsv
+		.tsv file with phenotype (and also covariates, if any)
 
 	--heritability=HERITABILITY
 		heritability, if known
