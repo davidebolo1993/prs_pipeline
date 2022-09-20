@@ -13,7 +13,7 @@ bigstatsr: 1.5.6
 
 # Run the script
 
-The pipeline consists in a single r script:
+The pipeline consists in a single r script based on [ldpred2](https://privefl.github.io/bigsnpr/articles/LDpred2.html).
 
 ```bash
 srun --nodes=1 --tasks-per-node=1 --partition cpu-interactive --cpus-per-task 8 --pty /bin/bash
@@ -113,13 +113,64 @@ Options:
 Rscript prs.r --input test/public-data3.bed --summary test/public-data3-sumstats.txt --summarycols test/public-data3.json --threads 8 --output test/output/public-data3
 ```
 
-## Input .json file
+## Input files
 
-The input .json file follows standard [json](https://en.wikipedia.org/wiki/JSON) specification, where, for each "key":"value" pair, users should encode:
-- the name of the column as it is used within the software ("key")
-- the name of the corresponding column in the sequencing summary file ("value")
-- "n_eff" can be either a column in the summary file or a single integer
-- "is_beta_precomp" should be logical ("TRUE", "FALSE") and indicates whether to consider the input sequencing summary a true sequencing summary or a tabular file with precomputed beta scores (from PGS catalog, for instance)
+### Model
 
+Available models are "grid" and "automatic". Default to "automatic".
+Detailed informations on each model are available in the [ldpred2 tutorial introduction](https://privefl.github.io/bigsnpr/articles/LDpred2.html) and the [paper](https://doi.org/10.1093/bioinformatics/btaa1029)
 
-##
+### Bed/bim/fam or Bgen
+
+The pipeline accepts either a unique .bed file (with matching .bim/.fam) or a unique (indexed) .bgen file. Companion scripts will be made available to generate such an input if not available already.
+Further informations on these file formats are available [here](https://www.cog-genomics.org/plink/2.0/formats).
+Examples are provided in the [test](test/) folder.
+
+### Summary
+
+A standard summary statics file or a file with pre-computed scores can be given as input.
+Summary statistics file format from GWAS catalog is described [here](https://www.ebi.ac.uk/gwas/docs/summary-statistics-format#:~:text=Summary%20statistics%20are%20defined%20as,row%20for%20each%20variant%20analysed.)
+PGS scoring file format from PGS catalog is described [here](https://www.pgscatalog.org/downloads/#:~:text=Formatted%20Files,-Format%3A%202.0&text=Each%20scoring%20file%20(variant%20information,gz%20).)
+An example summary statistic file is available in the [test](test/) folder.
+
+### Json
+
+While the other inputs to the pipeline are standard files, the input .json file is used to handle summary statistics and matrices with pre-computed beta scores generated with different methods - so that the pipeline actually knows which column refers to which value.
+The input .json file follows standard [json](https://en.wikipedia.org/wiki/JSON) specification, where, for each "key":"value" pair, users must specify:
+- the name of the column as it is used within the pipeline ("key") - do not change this
+- the name of the corresponding column in the sequencing summary file ("value") - adjust accordingly
+- "n_eff" can be either a column in the summary file or a single mumeric value
+- "is_beta_precomp" must be logical ("TRUE", "FALSE") and indicates whether to consider the input sequencing summary a true sequencing summary or a tabular file with precomputed beta scores (from PGS catalog, for instance)
+Some of the values in the .json file may be missing - for instance, it's possible to specify chromosome and position instead of rsid or rsid alone (or both) but at least one of those combinations must be present in order to match the input with the information in .bed/.bim/.fam or .bgen format.
+An example is provided in the [test](test/) folder.
+
+### Phenotype
+
+Table containing the phenotype as a third column (can be either categorical or continuous) and possible covariates afterwards. First and second columns can be anything (family and individual ID, for instance).
+An example is provided in the [test](test/) folder.
+ 
+### Heritability
+
+Value of the heritability, if known. It will be calculated otherwise.
+
+### Correlation matrix
+
+If a correlation matrix for matching summary statistics and .bed/.bim/.fam files is available (because stored by a previous run of the pipeline), skip the computation of the correlation matrix
+
+## Output files
+
+The pipeline stores the correlation matrix and the ld as R objects (.rds format) - named with the output prefix followed by ".corr.rds" and ".ld.rds" respectively. The correlation matrix can be provided as input to skip the computation of the correlation matrix itself - which is time consuming.
+
+### Automatic model
+
+When using the automatic model without a table of phenotypes as input, the pipeline returns beta scores and predictions from the automatic model - named with the output prefix followed by ".auto.beta_scores.tsv" and ".auto.prs.tsv" respectively
+When using the automatic model with a table of phenotypes as input, the pipeline further tests the generated predictions on the provided phenotype. Performances are stored as summary files - named with the output prefix followed by ".auto.summary.tsv" and ".auto.summary.rds" respectively
+
+### Grid model
+
+Grid model can only be run with a table of phenotypes as input. 
+The pipeline returns beta scores and predictions from the grid model - named with the output prefix followed by ".auto.grid_scores.tsv" and "grid.prs.tsv" respectively - as well as performances of tested models as a tab-separated value file -  named with the output prefix followed by ".grid.allsummary.tsv" - and those of the best model as an additional R object - named with the output prefix followed by ".grid.bestsummary.rds".
+
+## Sbatch script
+
+A [sbatch script](scripts/prs.sbatch) is provided to run the pipeline using an entire computational node. Parameters should be adjusted coherently.

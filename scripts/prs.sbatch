@@ -14,10 +14,7 @@ echo '----------------------------'
 eval "$(conda shell.bash hook)"
 conda activate bigsnprenv_1911
 
-
-Rsciprt prs.r
-
-
+Rscript prs.r --input ../test/public-data3.bed --summary ../test/public-data3-sumstats.txt --summarycols ../test/public-data3.json --threads 32 --output ../test/output/public-data3
 
 echo '----------------------------'
 echo "COMPLETED: $(date)"

@@ -13,6 +13,7 @@ library(dplyr)
 library(optparse)
 library(tools)
 library(rjson)
+library(crayon)
 
 sessionInfo()
 
@@ -23,7 +24,7 @@ check_model<-function(x) {
   if (!x %in% c('automatic', 'grid')) {
 
     now<-Sys.time()
-    stop('[',now,'][Error] specified model can be either automatic or grid')
+    stop(red('[',now,'][Error] specified model can be either automatic or grid'))
 
   }
 
@@ -35,14 +36,14 @@ check_input<-function(x) {
   if (is.null(x)) {
 
   now<-Sys.time()
-  stop('[',now,'][Error] a .bed/.bgen file must be provided as input') 
+  stop(red('[',now,'][Error] a .bed/.bgen file must be provided as input'))
 
   } else {
 
     if (! file.exists(file.path(x))) {
 
       now<-Sys.time()
-      stop('[',now,'][Error] the .bed/.bgen file must exist') 
+      stop(red('[',now,'][Error] the .bed/.bgen file must exist'))
 
     } else {
 
@@ -58,7 +59,7 @@ check_input<-function(x) {
         if ((! file.exists(file.path(bim_f))) | (! file.exists(file.path(fam_f)))) {
 
           now<-Sys.time()
-          stop('[',now,'][Error] .bim and .fam files must exist in .bed file location')
+          stop(red('[',now,'][Error] .bim and .fam files must exist in .bed file location'))
 
         }
 
@@ -71,13 +72,13 @@ check_input<-function(x) {
         if (!file.exists(paste0(x, ".bgi"))) {
 
           now<-Sys.time()
-          stop('[',now,'][Error] .bgen file must have a companion .bgi index. Use bgenix with .bgen file to create a proper index')
+          stop(red('[',now,'][Error] .bgen file must have a companion .bgi index. Use bgenix with .bgen file to create a proper index'))
         }
 
       } else {
 
         now<-Sys.time()
-        stop('[',now,'][Error] unknown input file extension') 
+        stop(red('[',now,'][Error] unknown input file extension'))
 
       }
 
@@ -111,14 +112,14 @@ check_summary<-function(x) {
   if (is.null(x)) {
 
     now<-Sys.time()
-    stop('[',now,'][Error] summary statistics or tsv with pre-computed beta scores must be provided') 
+    stop(red('[',now,'][Error] summary statistics or tsv with pre-computed beta scores must be provided'))
 
   } else {
     
     if (! file.exists(file.path(x))) {
 
       now<-Sys.time()
-      stop('[',now,'][Error] summary statistics or tsv with pre-computed beta scores file must exist') 
+      stop(red('[',now,'][Error] summary statistics or tsv with pre-computed beta scores file must exist'))
 
     } 
   } 
@@ -201,12 +202,13 @@ load_bed<-function(x, threads) {
   message('[',now,'][Message] reading .bed/.bim/.fam files')
 
   bed_file<-file.path(x)
+  backing_file<-str_replace(bed_file, ".bed", "") #cut extension out
   bk_file<-file.path(str_replace(bed_file, ".bed", ".bk"))
   rds_file<-file.path(str_replace(bed_file, ".bed", ".rds"))
 
   if (!file.exists(bk_file)) {
 
-    snp_readBed(bed_file, backingfile=bk_file, ncores=threads) #this generate a .rds object that can be loaded into the environment
+    snp_readBed2(bed_file, backingfile=backing_file, ncores=threads) #this generate a .rds object that can be loaded into the environment
 
   }
 
@@ -246,7 +248,7 @@ check_phenotype<-function(x) {
   if (is.null(x$phenotype)) {
 
     now<-Sys.time()
-    message('[',now,'][Warning] missing table of phenotypes/covariates. Model coherced to automatic even when grid is specified')
+    message(yellow('[',now,'][Warning] missing table of phenotypes/covariates. Model coherced to automatic even when grid is specified'))
     x$model<-"automatic"
 
     #if (! is.null(x$train)) {
@@ -261,7 +263,7 @@ check_phenotype<-function(x) {
     if (! file.exists(file.path(x$phenotype))) {
 
       now<-Sys.time()
-      stop('[',now,'][Error] if provided, table of phenotypes/covariates must exist')
+      stop(red('[',now,'][Error] if provided, table of phenotypes/covariates must exist'))
 
     }
   }
@@ -423,27 +425,27 @@ check_correlation<-function(x) {
     if (! file.exists(file.path(x))) {
 
       now<-Sys.time()
-      stop('[',now,'][Error] if provided, correlation matrix must exist')
+      stop(red('[',now,'][Error] if provided, correlation matrix must exist'))
 
     } else {
 
         if (file_ext(file.path(x)) != "rds") {
 
             now<-Sys.time()
-            stop('[',now,'][Error] if provided, correlation matrix must be provided in .rds file')
+            stop(red('[',now,'][Error] if provided, correlation matrix must be provided in .rds file'))
         }
 
         if (! file.exists(str_replace(file.path(x), ".rds", ".sbk"))) {
 
             now<-Sys.time()
-            stop('[',now,'][Error] if provided, correlation matrix must have a supporting .sbk file - same name, different extension - in the same directory')
+            stop(red('[',now,'][Error] if provided, correlation matrix must have a supporting .sbk file - same name, different extension - in the same directory'))
 
         }
 
         if (! file.exists(str_replace(file.path(x), ".corr.rds", ".ld.rds"))) {
 
             now<-Sys.time()
-            stop('[',now,'][Error] if provided, correlation matrix must have a matchind .ld.rds file - different name, same extension - in the same directory')
+            stop(red('[',now,'][Error] if provided, correlation matrix must have a matchind .ld.rds file - different name, same extension - in the same directory'))
 
         }
 
@@ -499,7 +501,7 @@ if (!is_bgen) {
 
 } else {
 
-  stop('[',now,'][Error] not extensively tested. Get in touch with davide.bolognini@fht.org')
+  stop(red('[',now,'][Error] not extensively tested. Get in touch with davide.bolognini@fht.org'))
   #obj.bigSNP<-load_bgen(opt$input,threads=opt$threads)
 
 }
@@ -623,7 +625,7 @@ if (!beta_is_precomp) {
     message('[',now,'][Message] storing correlation matrix and ld values to files')
 
     saveRDS(corr, file=file.path(paste0(opt$output, ".corr.rds")))
-    saveRDS(corr, file=file.path(paste0(opt$output, ".ld.rds")))
+    saveRDS(ld, file=file.path(paste0(opt$output, ".ld.rds")))
 
   } else {
 
