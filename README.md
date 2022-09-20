@@ -16,6 +16,8 @@ bigstatsr: 1.5.6
 The pipeline consists in a single r script based on [ldpred2](https://privefl.github.io/bigsnpr/articles/LDpred2.html).
 
 ```bash
+git clone https://github.com/davidebolo1993/prs_pipeline
+cd prs_pipeline
 srun --nodes=1 --tasks-per-node=1 --partition cpu-interactive --cpus-per-task 8 --pty /bin/bash
 conda activate bigsnprenv_1911
 Rscript scripts/prs.r --help
