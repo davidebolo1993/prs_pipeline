@@ -118,24 +118,24 @@ Rscript prs.r --input test/public-data3.bed --summary test/public-data3-sumstats
 ### Model
 
 Available models are "grid" and "automatic". Default to "automatic".
-Detailed informations on each model are available in the [ldpred2 tutorial introduction](https://privefl.github.io/bigsnpr/articles/LDpred2.html) and the [paper](https://doi.org/10.1093/bioinformatics/btaa1029)
+Detailed informations on each model are available in the [ldpred2 tutorial introduction](https://privefl.github.io/bigsnpr/articles/LDpred2.html) and the [paper](https://doi.org/10.1093/bioinformatics/btaa1029).
 
 ### Bed/bim/fam or Bgen
 
-The pipeline accepts either a unique .bed file (with matching .bim/.fam) or a unique (indexed) .bgen file. Companion scripts will be made available to generate such an input if not available already.
+The pipeline accepts either a unique .bed file (with matching .bim/.fam) or a unique (indexed) .bgen file. Companion scripts will be released to generate such an input if not available already.
 Further informations on these file formats are available [here](https://www.cog-genomics.org/plink/2.0/formats).
 Examples are provided in the [test](test/) folder.
 
 ### Summary
 
 A standard summary statics file or a file with pre-computed scores can be given as input.
-Summary statistics file format from GWAS catalog is described [here](https://www.ebi.ac.uk/gwas/docs/summary-statistics-format#:~:text=Summary%20statistics%20are%20defined%20as,row%20for%20each%20variant%20analysed.)
-PGS scoring file format from PGS catalog is described [here](https://www.pgscatalog.org/downloads/#:~:text=Formatted%20Files,-Format%3A%202.0&text=Each%20scoring%20file%20(variant%20information,gz%20).)
+Summary statistics file format from GWAS catalog is described [here](https://www.ebi.ac.uk/gwas/docs/summary-statistics-format#:~:text=Summary%20statistics%20are%20defined%20as,row%20for%20each%20variant%20analysed.).
+PGS scoring file format from PGS catalog is described [here](https://www.pgscatalog.org/downloads/#:~:text=Formatted%20Files,-Format%3A%202.0&text=Each%20scoring%20file%20(variant%20information,gz%20).).
 An example summary statistic file is available in the [test](test/) folder.
 
 ### Json
 
-While the other inputs to the pipeline are standard files, the input .json file is used to handle summary statistics and matrices with pre-computed beta scores generated with different methods - so that the pipeline actually knows which column refers to which value.
+While the other inputs to the pipeline are standard files, the input .json file is used to handle summary statistics and matrices with pre-computed scores generated with different methods - so that the pipeline actually knows which column refers to which value.
 The input .json file follows standard [json](https://en.wikipedia.org/wiki/JSON) specification, where, for each "key":"value" pair, users must specify:
 - the name of the column as it is used within the pipeline ("key") - do not change this
 - the name of the corresponding column in the sequencing summary file ("value") - adjust accordingly
@@ -159,17 +159,17 @@ If a correlation matrix for matching summary statistics and .bed/.bim/.fam files
 
 ## Output files
 
-The pipeline stores the correlation matrix and the ld as R objects (.rds format) - named with the output prefix followed by ".corr.rds" and ".ld.rds" respectively. The correlation matrix can be provided as input to skip the computation of the correlation matrix itself - which is time consuming.
+The pipeline stores the correlation matrix and the ld as R objects (.rds format) - named with the output prefix followed by `.corr.rds` and `.ld.rds` respectively. The correlation matrix can be provided as input to skip the computation of the correlation matrix itself - which is time consuming.
 
 ### Automatic model
 
-When using the automatic model without a table of phenotypes as input, the pipeline returns beta scores and predictions from the automatic model - named with the output prefix followed by ".auto.beta_scores.tsv" and ".auto.prs.tsv" respectively
-When using the automatic model with a table of phenotypes as input, the pipeline further tests the generated predictions on the provided phenotype. Performances are stored as summary files - named with the output prefix followed by ".auto.summary.tsv" and ".auto.summary.rds" respectively
+When using the automatic model without a table of phenotypes as input, the pipeline returns beta scores and predictions from the automatic model - named with the output prefix followed by `.auto.beta_scores.tsv` and `.auto.prs.tsv` respectively
+When using the automatic model with a table of phenotypes as input, the pipeline further tests the generated predictions on the provided phenotype. Performances are stored as summary files - named with the output prefix followed by `.auto.summary.tsv` and `.auto.summary.rds` respectively
 
 ### Grid model
 
 Grid model can only be run with a table of phenotypes as input. 
-The pipeline returns beta scores and predictions from the grid model - named with the output prefix followed by ".auto.grid_scores.tsv" and "grid.prs.tsv" respectively - as well as performances of tested models as a tab-separated value file -  named with the output prefix followed by ".grid.allsummary.tsv" - and those of the best model as an additional R object - named with the output prefix followed by ".grid.bestsummary.rds".
+The pipeline returns beta scores and predictions from the grid model - named with the output prefix followed by `.auto.grid_scores.tsv` and `grid.prs.tsv` respectively - as well as performances of tested models as a tab-separated value file -  named with the output prefix followed by `.grid.allsummary.tsv` - and those of the best model as an additional R object - named with the output prefix followed by `.grid.bestsummary.rds`.
 
 ## Sbatch script
 
