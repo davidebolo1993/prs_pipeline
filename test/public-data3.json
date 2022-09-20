@@ -1,0 +1,11 @@
+{	"chr": "chr",
+	"rsid": "rsid",
+	"pos": "pos",
+  	"a0": "a0",
+  	"a1": "a1",
+	"beta": "beta",
+	"p": "p",
+	"n_eff": "N",
+	"beta_se": "beta_se",
+	"is_beta_precomp": "FALSE"
+}

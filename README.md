@@ -11,13 +11,13 @@ bigsnpr: 1.10.8
 bigstatsr: 1.5.6
 ```
 
-# Run the pipeline
+# Run the script
 
 The pipeline consists in a single r script:
 
 ```bash
+srun --nodes=1 --tasks-per-node=1 --partition cpu-interactive --cpus-per-task 8 --pty /bin/bash
 conda activate bigsnprenv_1911
-
 Rscript scripts/prs.r --help
 
 #During startup - Warning message:
@@ -90,7 +90,7 @@ Options:
 		.json file defining columns to use, as in test/sample.json
 
 	-p PHENOTYPE, --phenotype=PHENOTYPE
-		tsv file with phenotype (and also covariates, if any) as in test/pheno.tsv
+		.tsv file with phenotype (and also covariates, if any) as in test/pheno.tsv
 
 	--heritability=HERITABILITY
 		heritability, if known
@@ -99,7 +99,7 @@ Options:
 		output prefix [required]
 
 	--threads=THREADS
-		computational threads [1]
+		computing threads [1]
 
 	--correlation=CORRELATION
 		the correlation matrix provided as a pre-computed .rds object
@@ -107,5 +107,8 @@ Options:
 	-h, --help
 		Show this help message and exit
 
-```
 
+#run with test data
+
+Rscript prs.r --input test/public-data3.bed --summary test/public-data3-sumstats.txt --summarycols test/public-data3.json --threads 8 --output test/output/public-data3
+```

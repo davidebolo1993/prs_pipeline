@@ -89,6 +89,23 @@ check_input<-function(x) {
 
 }
 
+
+check_output<-function(x) {
+
+  if (is.null(x$output)) {
+
+    now<-Sys.time()
+    stop('[',now,'][Error] output prefix must be specified') 
+
+  } else {
+
+    x$output<-normalizePath(file.path(x$output))
+    out_dir<-dirname(x$output)
+    dir.create(out_dir, recursive=TRUE,showWarning=FALSE)
+  }
+
+}
+
 check_summary<-function(x) {
 
   if (is.null(x)) {
@@ -142,9 +159,25 @@ load_summary<-function(x, cols, threads) {
   jfile<-fromJSON(file = cols_file)
   names_cols<-names(jfile)[c(1:length(jfile)-1)]
   select_values<-as.character(jfile)[c(1:length(jfile)-1)]
-  precomp_betas<-type.convert(as.character(jfile)[length(jfile)])
+  precomp_betas<-type.convert(as.character(jfile)[length(jfile)],as.is=TRUE)
+  
+  if (class(jfile$n_eff) == "numeric") {
+
+    n_val<-jfile$n_eff
+    jfile<-jfile[which(names(jfile) != "n_eff")]
+    select_values<-as.character(jfile)[c(1:length(jfile)-1)]
+    names_cols<-names(jfile)[c(1:length(jfile)-1)]
+
+  }
+
   sumstats<-data.frame(bigreadr::fread2(stat_file, nThread=threads, select=select_values))
   colnames(sumstats)<-names_cols
+
+  if (! "n_eff" %in% colnames(sumstats)) {
+
+    sumstats$n_eff<-n_val
+
+  }
 
   if (!isTRUE(precomp_betas)) { 
 
@@ -430,10 +463,10 @@ option_list = list(
   make_option(c('-i', '--input'), action='store', type='character', help='.bed file (with companion .bim and .fam files) or (indexed) .bgen file [required]'),
   make_option(c('-s', '--summary'), action='store', type='character', help='GWAS summary stats or pre-calculated tsv (with header) containing beta scores [required]'),
   make_option(c('--summarycols'), action='store', type='character', help='.json file defining columns to use, as in test/sample.json'),
-  make_option(c('-p', '--phenotype'), action='store', type='character', help='tsv file with phenotype (and also covariates, if any) as in test/pheno.tsv'),
+  make_option(c('-p', '--phenotype'), action='store', type='character', help='.tsv file with phenotype (and also covariates, if any) as in test/pheno.tsv'),
   make_option(c('--heritability'), action='store', type='numeric', help='heritability, if known'),
   make_option(c('-o', '--output'), action='store', type='character', help='output prefix [required]'),
-  make_option(c('--threads'), action='store', type='numeric', help='computational threads [1]', default=1),
+  make_option(c('--threads'), action='store', type='numeric', help='computing threads [1]', default=1),
   make_option(c('--correlation'), action='store', type='character', help='the correlation matrix provided as a pre-computed .rds object')
   #make_option(c('-t', '--train'), action='store', type='character', help='train percentage for training-testing - internal validation'),
   #make_option(c('-x', '--external'), action='store', type='character', help='external validation set. Comma-separated .bed (or .bgen) and .pheno tsv. .bed should have accompanying .bim and .fam')
@@ -512,7 +545,6 @@ message('[',now,'][Message] reading summary statistics')
 stats<-load_summary(opt$summary, opt$summarycols, opt$threads)
 sumstats<-stats[[1]]
 beta_is_precomp<-stats[[2]]
-n_eff<-sumstats$n_eff
 
 now<-Sys.time()
 message('[',now,'][Message] done')
@@ -612,7 +644,7 @@ if (is.null(opt$heritability)) {
     now<-Sys.time()
     message('[',now,'][Message] estimating h2')
 
-    ldsc <- with(df_beta, snp_ldsc(ld, length(ld), chi2 = (beta / beta_se)^2, sample_size = n_eff, blocks = NULL))
+    ldsc <- with(df_beta, snp_ldsc(ld, length(ld), chi2 = (beta / beta_se)^2, sample_size = sumstats$n_eff, blocks = NULL))
     h2_est <- ldsc[["h2"]]
 
     now<-Sys.time()
