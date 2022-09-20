@@ -84,7 +84,7 @@ Options:
 		.bed file (with companion .bim and .fam files) or (indexed) .bgen file [required]
 
 	-s SUMMARY, --summary=SUMMARY
-		GWAS summary stats or pre-calculated tsv (with header) containing beta scores [required]
+		GWAS summary stats or pre-calculated .tsv (with header) containing beta scores [required]
 
 	--summarycols=SUMMARYCOLS
 		.json file defining columns to use
@@ -112,3 +112,14 @@ Options:
 
 Rscript prs.r --input test/public-data3.bed --summary test/public-data3-sumstats.txt --summarycols test/public-data3.json --threads 8 --output test/output/public-data3
 ```
+
+## Input .json file
+
+The input .json file follows standard [json](https://en.wikipedia.org/wiki/JSON) specification, where, for each "key":"value" pair, users should encode:
+- the name of the column as it is used within the software ("key")
+- the name of the corresponding column in the sequencing summary file ("value")
+- "n_eff" can be either a column in the summary file or a single integer
+- "is_beta_precomp" should be logical ("TRUE", "FALSE") and indicates whether to consider the input sequencing summary a true sequencing summary or a tabular file with precomputed beta scores (from PGS catalog, for instance)
+
+
+##

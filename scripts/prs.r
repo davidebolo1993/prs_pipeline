@@ -461,7 +461,7 @@ options(warn = -1)
 option_list = list(
   make_option(c('-m', '--model'), action='store', type='character', help='model to use, either automatic or grid. Default to automatic', default='automatic'),
   make_option(c('-i', '--input'), action='store', type='character', help='.bed file (with companion .bim and .fam files) or (indexed) .bgen file [required]'),
-  make_option(c('-s', '--summary'), action='store', type='character', help='GWAS summary stats or pre-calculated tsv (with header) containing beta scores [required]'),
+  make_option(c('-s', '--summary'), action='store', type='character', help='GWAS summary stats or pre-calculated .tsv (with header) containing beta scores [required]'),
   make_option(c('--summarycols'), action='store', type='character', help='.json file defining columns to use'),
   make_option(c('-p', '--phenotype'), action='store', type='character', help='.tsv file with phenotype (and also covariates, if any)'),
   make_option(c('--heritability'), action='store', type='numeric', help='heritability, if known'),
