@@ -434,7 +434,7 @@ option_list = list(
   make_option(c('--heritability'), action='store', type='numeric', help='heritability, if known'),
   make_option(c('-o', '--output'), action='store', type='character', help='output prefix [required]'),
   make_option(c('--threads'), action='store', type='numeric', help='computational threads [1]', default=1),
-  make_option(c('--correlation'), action='store', type='character', help='the correlation matrix provided as a pre-computed .rds object [1]', default=1)
+  make_option(c('--correlation'), action='store', type='character', help='the correlation matrix provided as a pre-computed .rds object')
   #make_option(c('-t', '--train'), action='store', type='character', help='train percentage for training-testing - internal validation'),
   #make_option(c('-x', '--external'), action='store', type='character', help='external validation set. Comma-separated .bed (or .bgen) and .pheno tsv. .bed should have accompanying .bim and .fam')
 )

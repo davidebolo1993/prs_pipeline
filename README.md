@@ -102,7 +102,7 @@ Options:
 		computational threads [1]
 
 	--correlation=CORRELATION
-		the correlation matrix provided as a pre-computed .rds object [1]
+		the correlation matrix provided as a pre-computed .rds object
 
 	-h, --help
 		Show this help message and exit
