@@ -229,11 +229,10 @@ load_bed<-function(x, threads) {
   #rds_file<-file.path(str_replace(bgen_file, ".bgen", ".rds"))
   #bgi_file<-file.path(str_replace(bgen_file, ".bgen", ".bgen.bgi"))
 
-  #bgi<-snp_readBGI(bgi_file,snp_id=NULL)
-  #snps_ids<-list(paste(bgi$chromosome, bgi$position, bgi$allele1, bgi$allele2, sep="_")) #do we want this or an external table?
-
   #if (!file.exists(bk_file)) {
 
+    #bgi<-snp_readBGI(bgi_file,snp_id=NULL)
+    #snps_ids<-list(paste(bgi$chromosome, bgi$position, bgi$allele1, bgi$allele2, sep="_")) #do we want this or an external table?
     #snp_readBGEN(bgen_file, backingfile=backing_file, list_snp_id=snps_ids, ncores=threads, read_as ="dosage")
 
   #}

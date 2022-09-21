@@ -11,14 +11,21 @@ bigsnpr: 1.10.8
 bigstatsr: 1.5.6
 ```
 
+# Clone the pipeline
+
+```bash
+git clone https://github.com/davidebolo1993/prs_pipeline
+cd prs_pipeline
+```
+
 # Run the script
 
 The pipeline consists in a single r script based on [ldpred2](https://privefl.github.io/bigsnpr/articles/LDpred2.html).
 
 ```bash
-git clone https://github.com/davidebolo1993/prs_pipeline
-cd prs_pipeline
-srun --nodes=1 --tasks-per-node=1 --partition cpu-interactive --cpus-per-task 8 --pty /bin/bash
+
+#srun --nodes=1 --tasks-per-node=1 --partition cpu-interactive --cpus-per-task 8 --pty /bin/bash #this is to enter a computational node
+
 conda activate bigsnprenv_1911
 Rscript scripts/prs.r --help
 
@@ -124,9 +131,17 @@ Detailed informations on each model are available in the [ldpred2 tutorial intro
 
 ### Bed/bim/fam or Bgen
 
-The pipeline accepts either a unique .bed file (with matching .bim/.fam) or a unique (indexed) .bgen file. Companion scripts will be released to generate such an input if not available already.
+The pipeline accepts either a unique .bed file (with matching .bim/.fam) or a unique (indexed) .bgen file.
 Further informations on these file formats are available [here](https://www.cog-genomics.org/plink/2.0/formats).
 Examples are provided in the [test](test/) folder.
+
+#### Build sinlge .bed/.bim/.fam or single .bgen from multiple inputs
+
+Companion scripts are released in the [scripts](scripts/) folder to generate a single input .bed/.bim/.fam or .bgen if not available already (from chromosome-specific .bed/.bgen files).
+For .bgen files, use [this script](scripts/multi_bgen.r). Positional arguments are a directory containing (indexed) .bgen files, the output, merged, .rds object and the number of computational threads.
+The script also generates companion .bk, .bgen and .bgi files - the (indexed) .bgen files is actually empty but can be given as input to the pipeline that will load the informative .rds/.bk files instead.
+A sbatch script that run the above mentioned R script is also available - adjust the parameters accordingly to the input files.
+For .bed files, those can be merged using [plink2](https://www.cog-genomics.org/plink/2.0/). A dedicated sbatch script to be used as template is available in the [script](scripts/) folder.
 
 ### Summary
 
@@ -175,4 +190,4 @@ The pipeline returns beta scores and predictions from the grid model - named wit
 
 ## Sbatch script
 
-A [sbatch script](scripts/prs.sbatch) is provided to run the pipeline using an entire computational node. Parameters should be adjusted coherently.
+A [sbatch script](scripts/prs.sbatch) is provided to run the pipeline using an entire computational node. Parameters in the sbatch file should be adjusted coherently.
