@@ -33,7 +33,7 @@ line=$(head -n $SLURM_ARRAY_TASK_ID $bgen | tail -1)
 ext="${line%%.*}" #get the path without the extension 
 var=$(basename $ext) #get the basename
 
-Rscript prs.r --input $line --summary $summary --summarycols $json --threads 32 --output $outdir/$var
+Rscript prs.r --input $line --summary $summary --summarycols $json --threads 32 --output $outdir/$var/$var
 
 echo '----------------------------'
 echo "COMPLETED: $(date)"
