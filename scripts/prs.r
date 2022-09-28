@@ -14,7 +14,6 @@ library(optparse)
 library(tools)
 library(rjson)
 library(crayon)
-
 sessionInfo()
 
 # run functions before running the pipeline
@@ -100,7 +99,7 @@ check_output<-function(x) {
 
   } else {
 
-    x$output<-normalizePath(file.path(x$output))
+    #x$output<-normalizePath(file.path(x$output))
     out_dir<-dirname(x$output)
     dir.create(out_dir, recursive=TRUE,showWarning=FALSE)
   }
@@ -218,29 +217,29 @@ load_bed<-function(x, threads) {
 }
 
 
-#load_bgen<-function(x,threads) {
+load_bgen<-function(x,threads) {
 
-  #now<-Sys.time()
-  #message('[',now,'][Message] reading .bgen file')
+  now<-Sys.time()
+  message('[',now,'][Message] reading .bgen file')
   
-  #bgen_file<-file.path(x)
-  #backing_file<-str_replace(bgen_file, ".bgen", "") #cut extension out
-  #bk_file<-file.path(str_replace(bgen_file, ".bgen", ".bk"))
-  #rds_file<-file.path(str_replace(bgen_file, ".bgen", ".rds"))
-  #bgi_file<-file.path(str_replace(bgen_file, ".bgen", ".bgen.bgi"))
+  bgen_file<-file.path(x)
+  backing_file<-str_replace(bgen_file, ".bgen", "") #cut extension out
+  bk_file<-file.path(str_replace(bgen_file, ".bgen", ".bk"))
+  rds_file<-file.path(str_replace(bgen_file, ".bgen", ".rds"))
+  bgi_file<-file.path(str_replace(bgen_file, ".bgen", ".bgen.bgi"))
 
-  #if (!file.exists(bk_file)) {
+  if (!file.exists(bk_file)) {
 
-    #bgi<-snp_readBGI(bgi_file,snp_id=NULL)
-    #snps_ids<-list(paste(bgi$chromosome, bgi$position, bgi$allele1, bgi$allele2, sep="_")) #do we want this or an external table?
-    #snp_readBGEN(bgen_file, backingfile=backing_file, list_snp_id=snps_ids, ncores=threads, read_as ="dosage")
+    bgi<-snp_readBGI(bgi_file,snp_id=NULL)
+    snps_ids<-list(paste(bgi$chromosome, bgi$position, bgi$allele1, bgi$allele2, sep="_")) #do we want this or an external table?
+    snp_readBGEN(bgen_file, backingfile=backing_file, list_snp_id=snps_ids, ncores=threads, read_as ="dosage")
 
-  #}
+  }
 
-  #obj.bigSNP <- snp_attach(rds_file)
-  #obj.bigSNP
+  obj.bigSNP <- snp_attach(rds_file)
+  obj.bigSNP
 
-#}
+}
 
 check_phenotype<-function(x) {
 
@@ -500,14 +499,25 @@ if (!is_bgen) {
 
 } else {
 
-  stop(red('[',now,'][Error] not extensively tested. Get in touch with davide.bolognini@fht.org'))
-  #obj.bigSNP<-load_bgen(opt$input,threads=opt$threads)
+  #stop(red('[',now,'][Error] not extensively tested. Get in touch with davide.bolognini@fht.org'))
+  obj.bigSNP<-load_bgen(opt$input,threads=opt$threads)
 
 }
 
-G<-obj.bigSNP$genotypes #but these are frequencies if derived from bgen
-#maybe add check_imputation here for .bgen. Not necessary for now
-CHR <- obj.bigSNP$map$chromosome
+G <- tryCatch({
+  snp_fastImputeSimple(obj.bigSNP$genotypes)
+  }, error = function(e) {
+  obj.bigSNP$genotypes
+})
+
+
+if (is_bgen) {
+
+  obj.bigSNP$fam <- snp_fake(n = nrow(G), m = 1)$fam
+
+}
+
+CHR <- as.integer(obj.bigSNP$map$chromosome) #this is somehow necessary for .bgen files, not for bed
 POS <- obj.bigSNP$map$physical.pos
 
 now<-Sys.time()
@@ -551,18 +561,18 @@ now<-Sys.time()
 message('[',now,'][Message] done')
 message('[',now,'][Message] matching variants between genotype data and summary statistics - or previously computed beta scores')
 
-#if (is_bgen) {
+if (is_bgen) {
 
-  #map<-data.frame(obj.bigSNP$map)
-  #map$chromosome<-as.numeric(map$chromosome) #this is character otherwise
-  #map<-map[c("chromosome", "rsid", "physical.pos", "allele1", "allele2")]
+  map<-data.frame(obj.bigSNP$map)
+  map$chromosome<-as.numeric(map$chromosome) #this is character otherwise
+  map<-map[c("chromosome", "rsid", "physical.pos", "allele1", "allele2")]
 
-#} else { #is .bed
+} else { #is .bed
 
-map<-obj.bigSNP$map
-map<-map[c("chromosome", "marker.ID", "physical.pos", "allele1", "allele2")]
+  map<-obj.bigSNP$map
+  map<-map[c("chromosome", "marker.ID", "physical.pos", "allele1", "allele2")]
 
-#}
+}
 
 colnames(map)<-c("chr", "rsid", "pos", "a1", "a0")
 
@@ -645,7 +655,7 @@ if (is.null(opt$heritability)) {
     now<-Sys.time()
     message('[',now,'][Message] estimating h2')
 
-    ldsc <- with(df_beta, snp_ldsc(ld, length(ld), chi2 = (beta / beta_se)^2, sample_size = sumstats$n_eff, blocks = NULL))
+    ldsc <- with(df_beta, snp_ldsc(ld, length(ld), chi2 = (beta / beta_se)^2, sample_size = df_beta$n_eff, blocks = NULL))
     h2_est <- ldsc[["h2"]]
 
     now<-Sys.time()

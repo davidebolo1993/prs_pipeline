@@ -143,6 +143,11 @@ The script also generates companion .bk, .bgen and .bgi files - the (indexed) .b
 A sbatch script that run the above mentioned R script is also available - adjust the parameters accordingly to the input files.
 For .bed files, those can be merged using [plink2](https://www.cog-genomics.org/plink/2.0/). A dedicated sbatch script to be used as template is available in the [script](scripts/) folder.
 
+
+#### Run the pipeline in parallel on multiple .bgen inputs
+
+The pipeline can be run on .bgen files in parallel on a cluster - one node for each chromosome using [this script](scripts/bgen_parallel.sbatch). .bgen files must be provided in file-of-file-names format (.fofn) and the other parameters in the scipt should be set accordingly to the experimental setting. The sbatch script generates one output folder for each chromosome. 
+
 ### Summary
 
 A standard summary statics file or a file with pre-computed scores can be given as input.
