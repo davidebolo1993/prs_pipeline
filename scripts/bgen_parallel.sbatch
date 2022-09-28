@@ -19,8 +19,6 @@ echo '----------------------------'
 eval "$(conda shell.bash hook)"
 conda activate bigsnprenv_1911
 
-
-
 summary="/path/to/summary.tsv"
 json="/path/to/columns.json"
 
