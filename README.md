@@ -146,7 +146,7 @@ For .bed files, those can be merged using [plink2](https://www.cog-genomics.org/
 
 #### Run the pipeline in parallel on multiple .bgen inputs
 
-The pipeline can be run on .bgen files in parallel on a cluster - one node for each chromosome using [this script](scripts/bgen_parallel.sbatch). .bgen files must be provided in file-of-file-names format (.fofn) and the other parameters in the scipt should be set accordingly to the experimental setting. The sbatch script generates one output folder for each chromosome. 
+The pipeline can be run on .bgen files in parallel on a cluster - one node for each chromosome using [this script](scripts/bgen_parallel.sbatch). .bgen files must be provided in file-of-file-names format (.fofn) and the other parameters in the scipt should be set accordingly to the experimental setting. The sbatch script generates one output folder for each chromosome. Results for each chromosome can be summed up using this simple [bash script](scripts/sum_prs.sh) that produces a `all.prs.tsv` table in the output folder (the same used above).
 
 ### Summary
 
