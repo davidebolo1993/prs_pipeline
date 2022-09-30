@@ -23,4 +23,4 @@ done
 
 #sum
 head -1 $outdir/*/*.prs.tsv | grep -v "^=" | tail -1 | cut -f 1-3 > $outdir/all.prs.tsv
-tail -n+2 $outdir/*/*.prs.tsv | grep -v "^=" | sort -V | sed '1{/^ *$/d}' | datamash groupby 1,2 sum 3 >> $outdir/all.prs.tsv
+tail -n+2 $outdir/*/*.prs.tsv | grep -v "^=" | sed '/^$/d' | sort | datamash groupby 1,2 sum 3 | sort -V  >> $outdir/all.prs.tsv
