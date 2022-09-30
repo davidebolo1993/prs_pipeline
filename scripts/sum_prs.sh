@@ -3,6 +3,7 @@
 eval "$(conda shell.bash hook)"
 conda activate bigsnprenv_1911
 outdir="/path/to/outdir"
+matchid="/path/to/bgen.sample"
 
 #assume the output folder has the same tree structure from bgen_parallel.sbatch
 
@@ -23,4 +24,7 @@ done
 
 #sum
 head -1 $outdir/*/*.prs.tsv | grep -v "^=" | tail -1 | cut -f 1-3 > $outdir/all.prs.tsv
-tail -n+2 $outdir/*/*.prs.tsv | grep -v "^=" | sed '/^$/d' | sort | datamash groupby 1,2 sum 3 | sort -V  >> $outdir/all.prs.tsv
+tail -n+2 $outdir/*/*.prs.tsv | grep -v "^=" | sed '/^$/d' | sort | datamash groupby 1,2 sum 3 | sort -V | cut -f 3 > $outdir/vals.tsv
+tail -n+3 $matchid | awk '{print $1,$2}' OFS="\t" > $outdir/ids.tsv
+paste -d "\t" $outdir/ids.tsv $outdir/vals.tsv >> $outdir/all.prs.tsv && rm $outdir/vals.tsv $outdir/ids.tsv
+
