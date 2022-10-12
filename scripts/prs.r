@@ -31,7 +31,6 @@ check_model<-function(x) {
 
 check_input<-function(x) {
 
-
   if (is.null(x)) {
 
   now<-Sys.time()
@@ -412,7 +411,7 @@ recover_missing_cols<-function(sumstats,map) {
 
 check_correlation<-function(x) {
 
-   has_corr<-TRUE
+  has_corr<-TRUE
 
   if (is.null(x)) {
 
@@ -454,6 +453,34 @@ check_correlation<-function(x) {
   has_corr
 }
 
+check_index<-function(x) {
+
+  has_index<-FALSE
+
+  if (is.null(x)) {
+
+    now<-Sys.time()
+    message(yellow('[',now,'][Warning] no index provided. If an external correlation matrix is not provided, will use all the individuals for generating one'))
+
+  } else {
+
+    if (! file.exists(file.path(x))) {
+
+      now<-Sys.time()
+      stop(red('[',now,'][Error] if provided, index table must exists'))
+
+    } else {
+
+      has_index<-TRUE
+
+    }
+  }
+
+  has_index
+
+}
+
+
 # start the prs script 
 # create the list with all necessary files
 options(warn = -1)
@@ -467,7 +494,8 @@ option_list = list(
   make_option(c('--heritability'), action='store', type='numeric', help='heritability, if known'),
   make_option(c('-o', '--output'), action='store', type='character', help='output prefix [required]'),
   make_option(c('--threads'), action='store', type='numeric', help='computing threads [1]', default=1),
-  make_option(c('--correlation'), action='store', type='character', help='the correlation matrix provided as a pre-computed .rds object')
+  make_option(c('--correlation'), action='store', type='character', help='the correlation matrix provided as a pre-computed .rds object'),
+  make_option(c('--index'), action='store', type='character', help='indexes to limit correlation matrix calculation to')
   #make_option(c('-t', '--train'), action='store', type='character', help='train percentage for training-testing - internal validation'),
   #make_option(c('-x', '--external'), action='store', type='character', help='external validation set. Comma-separated .bed (or .bgen) and .pheno tsv. .bed should have accompanying .bim and .fam')
 )
@@ -487,6 +515,7 @@ check_output(opt)
 has_corr<-check_correlation(opt$correlation)
 #train_test<-check_train(opt$train)
 #external_validation<-check_external(opt$external)
+has_index<-check_index(opt$index)
 
 now<-Sys.time()
 message('[',now,'][Message] done') 
@@ -499,7 +528,6 @@ if (!is_bgen) {
 
 } else {
 
-  #stop(red('[',now,'][Error] not extensively tested. Get in touch with davide.bolognini@fht.org'))
   obj.bigSNP<-load_bgen(opt$input,threads=opt$threads)
 
 }
@@ -599,15 +627,18 @@ if (!beta_is_precomp) {
     now<-Sys.time()
     message('[',now,'][Message] computing correlation between variants')
     POS2 <- snp_asGeneticPos(CHR, POS, dir = dirname(opt$output), ncores = opt$threads)
-    individual_idx<-c(1:nrow(G))
+    
+    if (has_index) {
+    
+      now<-Sys.time()
+      message('[',now,'][Message] loading indexes to subset correlation matrix')
+      individual_idx<-as.integer(fread(opt$index)$V1)
+    
+    } else {
+    
+      individual_idx<-c(1:nrow(G))
 
-    #if (length(individual_idx) > 3000) { #we want to subsample
-
-        #now<-Sys.time()
-        #message('[',now,'][Warning] sampling individuals down to 3000 when computing correlation')
-        #individual_idx<-sample(individual_idx, 3000)
-
-    #} 
+    }
 
     for (chr in 1:22) {
 
