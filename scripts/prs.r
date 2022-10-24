@@ -460,14 +460,14 @@ check_index<-function(x) {
   if (is.null(x)) {
 
     now<-Sys.time()
-    message(yellow('[',now,'][Warning] no index provided. If an external correlation matrix is not provided, will use all the individuals for generating one'))
+    message(yellow('[',now,'][Warning] no reference .bed provided'))
 
   } else {
 
     if (! file.exists(file.path(x))) {
 
       now<-Sys.time()
-      stop(red('[',now,'][Error] if provided, index table must exists'))
+      stop(red('[',now,'][Error] if provided, reference .bed must exists'))
 
     } else {
 
@@ -495,7 +495,8 @@ option_list = list(
   make_option(c('-o', '--output'), action='store', type='character', help='output prefix [required]'),
   make_option(c('--threads'), action='store', type='numeric', help='computing threads [1]', default=1),
   make_option(c('--correlation'), action='store', type='character', help='the correlation matrix provided as a pre-computed .rds object'),
-  make_option(c('--index'), action='store', type='character', help='indexes to limit correlation matrix calculation to')
+  make_option(c('--reference'), action='store', type='character', help='reference panel in .rds format'),
+  make_option(c('--index'), action='store', type='character', help='indexes for the individuals in the reference panel in .tsv format')
   #make_option(c('-t', '--train'), action='store', type='character', help='train percentage for training-testing - internal validation'),
   #make_option(c('-x', '--external'), action='store', type='character', help='external validation set. Comma-separated .bed (or .bgen) and .pheno tsv. .bed should have accompanying .bim and .fam')
 )
@@ -515,7 +516,8 @@ check_output(opt)
 has_corr<-check_correlation(opt$correlation)
 #train_test<-check_train(opt$train)
 #external_validation<-check_external(opt$external)
-has_index<-check_index(opt$index)
+has_index<-check_index(opt$reference)
+has_index2<-check_index(opt$index)
 
 now<-Sys.time()
 message('[',now,'][Message] done') 
@@ -611,34 +613,55 @@ idsl<-strsplit(rsid_map, "_")
 ids_<-sapply(idsl,"[[",1)
 map$rsid<-ids_
 
-#check columns and add missing fields in sumstats/pre-computed betas. Rsid is necessary
+##filter based on panel, first
 
 sumstats<-recover_missing_cols(sumstats,map)
-sumstats$chr<-as.numeric(sumstats$chr)
+sumstats$chr<-as.integer(sumstats$chr)
+
 df_beta<- snp_match(sumstats, map,join_by_pos = FALSE) #match by rsid for the time being
 
 now<-Sys.time()
 message('[',now,'][Message] done')
 
+if (has_index) {
+
+  now<-Sys.time()
+  message('[',now,'][Message] subsetting to variants in the reference panel provided')
+
+  map_ldref <- readRDS(opt$reference)
+  map_panel<-map_ldref$map
+  map_panel<-map_panel[c("chromosome", "marker.ID", "physical.pos", "allele1", "allele2")]
+  colnames(map_panel)<-c("chr", "rsid", "pos", "a1", "a0")
+  keep<-which(df_beta$rsid %in%map_panel$rsid)
+  df_beta<-df_beta[keep,]
+  now<-Sys.time()
+  message('[',now,'][Message] ', nrow(df_beta), ' variants will be used')
+  message('[',now,'][Message] done')
+
+}
+
 if (!beta_is_precomp) {
 
   if (!has_corr) { 
 
-    now<-Sys.time()
-    message('[',now,'][Message] computing correlation between variants')
     POS2 <- snp_asGeneticPos(CHR, POS, dir = dirname(opt$output), ncores = opt$threads)
     
-    if (has_index) {
-    
+    if (has_index2) {
+
       now<-Sys.time()
       message('[',now,'][Message] loading indexes to subset correlation matrix')
       individual_idx<-as.integer(fread(opt$index)$V1)
-    
+      now<-Sys.time()
+      message('[',now,'][Message] done')
+
     } else {
     
       individual_idx<-c(1:nrow(G))
 
     }
+
+    now<-Sys.time()
+    message('[',now,'][Message] computing correlation between variants')
 
     for (chr in 1:22) {
 
