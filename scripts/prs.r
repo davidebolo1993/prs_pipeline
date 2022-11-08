@@ -704,22 +704,34 @@ if (!beta_is_precomp) {
 
 }
 
-if (is.null(opt$heritability)) {
 
-    now<-Sys.time()
-    message('[',now,'][Message] estimating h2')
+if (!beta_is_precomp) {
 
-    ldsc <- with(df_beta, snp_ldsc(ld, length(ld), chi2 = (beta / beta_se)^2, sample_size = df_beta$n_eff, blocks = NULL))
-    h2_est <- ldsc[["h2"]]
+	h2_tab_file<-file.path(paste0(opt$output, ".h2.tsv"))
 
-    now<-Sys.time()
-    message('[',now,'][Message] done')
+	if (is.null(opt$heritability)) {
 
-  } else {
+            now<-Sys.time()
+            message('[',now,'][Message] estimating h2')
 
-    h2_est<-opt$heritability
+            ldsc <- with(df_beta, snp_ldsc(ld, length(ld), chi2 = (beta / beta_se)^2, sample_size = df_beta$n_eff, blocks = NULL))
+            h2_est <- ldsc[["h2"]]
+
+            now<-Sys.time()
+            message('[',now,'][Message] done')
+
+        } else {
+
+            h2_est<-opt$heritability
+
+        }
+
+        h2_tab<-cbind(h2_est)
+        colnames(h2_tab)<-"h2"
+        fwrite(data.frame(h2_tab), file=h2_tab_file, sep="\t", col.names=TRUE, row.names=F)
 
 }
+
 
 if (!beta_is_precomp) {
 
@@ -731,6 +743,8 @@ if (!beta_is_precomp) {
     summary_file<-file.path(paste0(opt$output,'.auto.summary.rds')) #use only if pheno provided
     summarytab_file<-file.path(paste0(opt$output,'.auto.summary.tsv')) #use only if pheno provided
 
+    auto_stats_file<-file.path(paste0(opt$output, ".auto.params.rds"))
+
     #summary_file2<-file.path(paste0(opt$output,'.auto.summary.external.rds')) #use only if ext
     #summarytab_file2<-file.path(paste0(opt$output,'.auto.summary.external.tsv')) #use only if ext
 
@@ -741,6 +755,7 @@ if (!beta_is_precomp) {
                   vec_p_init = seq_log(1e-4, 0.2, length.out = 30),
                   allow_jump_sign = FALSE, shrink_corr = 0.95,
                   ncores = opt$threads)
+    saveRDS(multi_auto, file=auto_stats_file)
     range <- sapply(multi_auto, function(auto) diff(range(auto$corr_est)))
     keep <- (range > (0.9 * quantile(range, 0.9)))
     beta<-rowMeans(sapply(multi_auto[keep], function(auto) auto$beta_est))
