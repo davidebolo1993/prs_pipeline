@@ -595,7 +595,7 @@ if (is_bgen) {
 
   map<-data.frame(obj.bigSNP$map)
   map$chromosome<-as.numeric(map$chromosome) #this is character otherwise
-  map<-map[c("chromosome", "rsid", "physical.pos", "allele1", "allele2")]
+  map<-map[c("chromosome", "rsid", "physical.pos", "allele2", "allele1")]
 
 } else { #is .bed
 
